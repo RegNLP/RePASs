@@ -10,3 +10,4 @@ numpy
 tiktoken
 protobuf
 sentencepiece
+spacy
