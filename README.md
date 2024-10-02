@@ -21,13 +21,12 @@ RePASs/
 ```
 
 ## Explanation:
-data/: Contains your dataset files.
-models/: Stores the fine-tuned models.
-scripts/: Contains Python scripts for training and evaluation.
-requirements.txt: Lists all Python dependencies.
-README.md: Provides an overview and instructions.
-.gitignore: Specifies files/folders to ignore in Git.
-LICENSE: Defines the repository's license (MIT).
+- data/: Contains your dataset files.
+- models/: Stores the fine-tuned models.
+- scripts/: Contains Python scripts for training and evaluation.
+- requirements.txt: Lists all Python dependencies.
+- README.md: Provides an overview and instructions.
+- .gitignore: Specifies files/folders to ignore in Git.
 
 ## Setup Instructions
 1. Clone the Repository
