@@ -43,6 +43,7 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+python -m spacy download en_core_web_sm
 ```
 3. Prepare Your Input Data
 You do **not** need to add the `ObligationClassificationDataset.json` as it is already included in the `data/` directory. Prepare your own input JSON file with the following structure:
@@ -85,7 +86,7 @@ Here's a step-by-step example of how to use RePASs:
 ```bash
 python scripts/train_model.py
 ```
-2. Prepare Input Data (`data/test_data.json`):
+2. Prepare Input Data (`data/sample.json`):
 
 ```json
 [
@@ -111,10 +112,10 @@ Output:
 ```yaml
 Processing 1/2: QuestionID ['Q1']
 Processing 2/2: QuestionID ['Q2']
-Average Entailment Score: 0.85
-Average Contradiction Score: 0.10
-Average Obligation Coverage Score: 0.75
-Average Final Composite Score: 0.83
+Average Entailment Score: 0.11377999999999999
+Average Contradiction Score: 0.09597
+Average Obligation Coverage Score: 0.85
+Average Final Composite Score: 0.6226033333333334
 ```
 Results are saved in `ExampleMethodResults.txt`.
 
