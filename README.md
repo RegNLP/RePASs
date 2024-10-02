@@ -71,7 +71,7 @@ The fine-tuned model and tokenizer will be saved in the `models/obligation-class
 5. Evaluating with RePASs
 Run the evaluation script by providing your input JSON file and a group method name. The script will generate a results text file summarizing the evaluation metrics.
 ```bash
-python scripts/evaluate_model.py --input_file path/to/your_input_data.json --group_method_name YourMethodName
+python scripts/evaluate_model.py --input_file data/sample.json --group_method_name YourMethodName
 ```
 - --input_file: Path to your input JSON file.
 - --group_method_name: A name to group and label your results.
@@ -105,7 +105,7 @@ python scripts/train_model.py
 3. Evaluate:
 
 ```bash
-python scripts/evaluate_model.py --input_file data/test_data.json --group_method_name ExampleMethod
+python scripts/evaluate_model.py --input_file data/sample.json --group_method_name ExampleMethod
 ```
 Output:
 
