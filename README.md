@@ -61,8 +61,8 @@ You do **not** need to add the `ObligationClassificationDataset.json` as it is a
   - Answer: The answer generated based on the retrieved passages.
 
 4. Training the Model
-```bash
 Run the training script to fine-tune LegalBERT on the provided dataset.
+```bash
 python scripts/train_model.py
 ```
 The fine-tuned model and tokenizer will be saved in the `models/obligation-classifier-legalbert/` directory.
