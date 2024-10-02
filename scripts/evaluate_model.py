@@ -4,30 +4,49 @@ import json
 import pandas as pd
 import numpy as np
 import torch
-from transformers import (
-    AutoTokenizer,
-    AutoModelForSequenceClassification,
-    pipeline
-)
-from nltk.tokenize import sent_tokenize as sent_tokenize_uncached
-import nltk
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+import spacy
 from functools import cache
 import tqdm
 import os
 
-def setup():
-    nltk.download('punkt')
+# Load spaCy's English model
+nlp = spacy.load("en_core_web_sm")
+
+# Set up device for torch operations
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+# Load the tokenizer and model for obligation detection
+model_name = './models/obligation-classifier-legalbert'
+obligation_tokenizer = AutoTokenizer.from_pretrained(model_name)
+obligation_model = AutoModelForSequenceClassification.from_pretrained(model_name)
+obligation_model.to(device)
+obligation_model.eval()
+
+# Load NLI model and tokenizer for obligation coverage using Microsoft's model
+coverage_nli_model = pipeline(
+    "text-classification",
+    model="microsoft/deberta-large-mnli",
+    device=0 if torch.cuda.is_available() else -1
+)
+
+# Load NLI model and tokenizer for entailment and contradiction checks
+nli_tokenizer = AutoTokenizer.from_pretrained('cross-encoder/nli-deberta-v3-xsmall')
+nli_model = AutoModelForSequenceClassification.from_pretrained('cross-encoder/nli-deberta-v3-xsmall')
+nli_model.to(device)
+nli_model.eval()
 
 @cache
 def sent_tokenize(passage: str):
-    return sent_tokenize_uncached(passage)
+    doc = nlp(passage)
+    return [sent.text for sent in doc.sents]
 
 def softmax(logits):
     e_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
     return e_logits / np.sum(e_logits, axis=1, keepdims=True)
 
-def get_nli_probabilities(tokenizer, nli_model, premises, hypotheses, device):
-    features = tokenizer(
+def get_nli_probabilities(premises, hypotheses):
+    features = nli_tokenizer(
         premises, hypotheses, padding=True, truncation=True, return_tensors="pt"
     ).to(device)
     nli_model.eval()
@@ -36,7 +55,7 @@ def get_nli_probabilities(tokenizer, nli_model, premises, hypotheses, device):
     probabilities = softmax(logits)
     return probabilities
 
-def get_nli_matrix(tokenizer, nli_model, passages, answers, device):
+def get_nli_matrix(passages, answers):
     print(f"{len(passages)} passages and {len(answers)} answers.")
     entailment_matrix = np.zeros((len(passages), len(answers)))
     contradiction_matrix = np.zeros((len(passages), len(answers)))
@@ -44,10 +63,11 @@ def get_nli_matrix(tokenizer, nli_model, passages, answers, device):
     batch_size = 16
     for i, pas in enumerate(tqdm.tqdm(passages)):
         for b in range(0, len(answers), batch_size):
-            e = b + batch_size
-            probs = get_nli_probabilities(
-                tokenizer, nli_model, [pas] * (e - b), answers[b:e], device
-            )  # Get NLI probabilities
+            e = min(b + batch_size, len(answers))  # Ensure e does not exceed len(answers)
+            current_batch_size = e - b
+            premises_batch = [pas] * current_batch_size
+            hypotheses_batch = answers[b:e]
+            probs = get_nli_probabilities(premises_batch, hypotheses_batch)  # Get NLI probabilities
             entailment_matrix[i, b:e] = probs[:, 1]
             contradiction_matrix[i, b:e] = probs[:, 0]
     return entailment_matrix, contradiction_matrix
@@ -64,7 +84,7 @@ def calculate_scores_from_matrix(nli_matrix, score_type='entailment'):
     score = np.round(np.mean(reduced_vector), 5)
     return score
 
-def calculate_obligation_coverage_score(coverage_pipeline, passages, answers):
+def calculate_obligation_coverage_score(passages, answers):
     obligation_sentences_source = [sent for passage in passages for sent in sent_tokenize(passage)]
     obligation_sentences_answer = [sent for answer in answers for sent in sent_tokenize(answer)]
     covered_count = 0
@@ -72,7 +92,7 @@ def calculate_obligation_coverage_score(coverage_pipeline, passages, answers):
     for obligation in obligation_sentences_source:
         obligation_covered = False
         for answer_sentence in obligation_sentences_answer:
-            nli_result = coverage_pipeline(f"{answer_sentence} [SEP] {obligation}")
+            nli_result = coverage_nli_model(f"{answer_sentence} [SEP] {obligation}")
             if nli_result[0]['label'].lower() == 'entailment' and nli_result[0]['score'] > 0.7:
                 covered_count += 1
                 obligation_covered = True
@@ -81,17 +101,13 @@ def calculate_obligation_coverage_score(coverage_pipeline, passages, answers):
     coverage_score = covered_count / len(obligation_sentences_source) if obligation_sentences_source else 0
     return coverage_score
 
-def calculate_final_composite_score(passages, answers, tokenizer, nli_model, coverage_pipeline, device):
+def calculate_final_composite_score(passages, answers):
     passage_sentences = [sent for passage in passages for sent in sent_tokenize(passage)]
     answer_sentences = [sent for answer in answers for sent in sent_tokenize(answer)]
-    entailment_matrix, contradiction_matrix = get_nli_matrix(
-        tokenizer, nli_model, passage_sentences, answer_sentences, device
-    )
+    entailment_matrix, contradiction_matrix = get_nli_matrix(passage_sentences, answer_sentences)
     entailment_score = calculate_scores_from_matrix(entailment_matrix, 'entailment')
     contradiction_score = calculate_scores_from_matrix(contradiction_matrix, 'contradiction')
-    obligation_coverage_score = calculate_obligation_coverage_score(
-        coverage_pipeline, passages, answers
-    )
+    obligation_coverage_score = calculate_obligation_coverage_score(passages, answers)
     print(f"Entailment Score: {entailment_score}")
     print(f"Contradiction Score: {contradiction_score}")
     print(f"Obligation Coverage Score: {obligation_coverage_score}")
@@ -102,29 +118,6 @@ def calculate_final_composite_score(passages, answers, tokenizer, nli_model, cov
     return np.round(composite_score, 5)
 
 def main(input_file_path, group_methodName):
-    setup()
-
-    # Set up device for torch operations
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
-    # Load the tokenizer and model for obligation detection
-    model_name = './models/obligation-classifier-legalbert'
-    obligation_tokenizer = AutoTokenizer.from_pretrained(model_name)
-    obligation_model = AutoModelForSequenceClassification.from_pretrained(model_name)
-    obligation_model.to(device)
-    obligation_model.eval()
-
-    # Load NLI model and tokenizer for obligation coverage using Microsoft's model
-    coverage_nli_model = pipeline(
-        "text-classification", model="microsoft/deberta-large-mnli", device=0 if torch.cuda.is_available() else -1
-    )
-
-    # Load NLI model and tokenizer for entailment and contradiction checks
-    nli_tokenizer = AutoTokenizer.from_pretrained('cross-encoder/nli-deberta-v3-xsmall')
-    nli_model = AutoModelForSequenceClassification.from_pretrained('cross-encoder/nli-deberta-v3-xsmall')
-    nli_model.to(device)
-    nli_model.eval()
-
     with open(input_file_path, 'r') as file:
         test_data = json.load(file)
 
@@ -145,21 +138,16 @@ def main(input_file_path, group_methodName):
         passages = [item['RetrievedPassages']]
         answers = [item['Answer']]
         print(f"Processing {index + 1}/{total_items}: QuestionID {question}")
+        print(f"{len(passages)} passages and {len(answers)} answers.")
 
         # Calculate and store scores
         passage_sentences = [sent for passage in passages for sent in sent_tokenize(passage)]
         answer_sentences = [sent for answer in answers for sent in sent_tokenize(answer)]
-        entailment_matrix, contradiction_matrix = get_nli_matrix(
-            nli_tokenizer, nli_model, passage_sentences, answer_sentences, device
-        )
+        entailment_matrix, contradiction_matrix = get_nli_matrix(passage_sentences, answer_sentences)
         entailment_score = calculate_scores_from_matrix(entailment_matrix, 'entailment')
         contradiction_score = calculate_scores_from_matrix(contradiction_matrix, 'contradiction')
-        obligation_coverage_score = calculate_obligation_coverage_score(
-            coverage_nli_model, passages, answers
-        )
-        final_composite_score = (
-            obligation_coverage_score + entailment_score - contradiction_score + 1
-        ) / 3
+        obligation_coverage_score = calculate_obligation_coverage_score(passages, answers)
+        final_composite_score = (obligation_coverage_score + entailment_score - contradiction_score + 1) / 3
 
         # Append to respective lists
         entailment_scores.append(entailment_score)
