@@ -43,7 +43,6 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-python -m spacy download en_core_web_sm
 ```
 3. Prepare Your Input Data
 You do **not** need to add the `ObligationClassificationDataset.json` as it is already included in the `data/` directory. Prepare your own input JSON file with the following structure:
@@ -71,12 +70,12 @@ The fine-tuned model and tokenizer will be saved in the `models/obligation-class
 5. Evaluating with RePASs
 Run the evaluation script by providing your input JSON file and a group method name. The script will generate a results text file summarizing the evaluation metrics.
 ```bash
-python scripts/evaluate_model.py --input_file data/sample.json --group_method_name YourMethodName
+python scripts/evaluate_model.py --input_file ./data/sample.json --group_method_name my_method
 ```
 - --input_file: Path to your input JSON file.
 - --group_method_name: A name to group and label your results.
 
-The results will be saved in a text file named `YourMethodName.txt`.
+The results will be saved in `data/my_method` folder.
 
 ## Usage Example
 Here's a step-by-step example of how to use RePASs:
@@ -105,7 +104,7 @@ python scripts/train_model.py
 3. Evaluate:
 
 ```bash
-python scripts/evaluate_model.py --input_file data/sample.json --group_method_name ExampleMethod
+python scripts/evaluate_model.py --input_file ./data/sample.json --group_method_name my_method
 ```
 Output:
 
@@ -117,7 +116,7 @@ Average Contradiction Score: 0.180556
 Average Obligation Coverage Score: 0.85
 Average Final Composite Score: 0.840803
 ```
-Results are saved in `ExampleMethodResults.txt`.
+Results are saved in `data/my_method` folder.
 
 
 
