@@ -112,10 +112,10 @@ Output:
 ```yaml
 Processing 1/2: QuestionID ['Q1']
 Processing 2/2: QuestionID ['Q2']
-Average Entailment Score: 0.11377999999999999
-Average Contradiction Score: 0.09597
+Average Entailment Score: 0.852965
+Average Contradiction Score: 0.180556
 Average Obligation Coverage Score: 0.85
-Average Final Composite Score: 0.6226033333333334
+Average Final Composite Score: 0.840803
 ```
 Results are saved in `ExampleMethodResults.txt`.
 
