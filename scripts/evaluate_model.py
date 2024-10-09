@@ -32,8 +32,6 @@ nli_model = AutoModelForSequenceClassification.from_pretrained('cross-encoder/nl
 nli_model.to(device)
 nli_model.eval()
 
-tokenizer = AutoTokenizer.from_pretrained('nlpaueb/legal-bert-base-uncased')
-
 # Define a cached version of sentence tokenization
 @cache
 def sent_tokenize(passage: str):
@@ -44,7 +42,7 @@ def softmax(logits):
     return e_logits / np.sum(e_logits, axis=1, keepdims=True)
 
 def get_nli_probabilities(premises, hypotheses):
-    features = tokenizer(premises, hypotheses, padding=True, truncation=True, return_tensors="pt").to(device)
+    features = nli_tokenizer(premises, hypotheses, padding=True, truncation=True, return_tensors="pt").to(device)
     nli_model.eval()
     with torch.no_grad():
         logits = nli_model(**features).logits.cpu().numpy()
