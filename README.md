@@ -113,8 +113,8 @@ Processing 1/2: QuestionID ['Q1']
 Processing 2/2: QuestionID ['Q2']
 Average Entailment Score: 0.113
 Average Contradiction Score: 0.095
-Average Obligation Coverage Score: 0.85
-Average Final Composite Score: 0.622
+Average Obligation Coverage Score: 0.800
+Average Final Composite Score: 0.605
 ```
 Results are saved in `data/my_method` folder.
 
