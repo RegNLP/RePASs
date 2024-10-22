@@ -1,0 +1,82 @@
+[
+    {
+        "QuestionID": "Q1",
+        "RetrievedPassages": [
+            "The regulation mandates that all financial institutions must comply with anti-money laundering (AML) standards.",
+            "Institutions are required to implement robust AML policies to detect and prevent illicit activities."
+        ],
+        "Answer": "Financial institutions must adhere to AML standards by implementing comprehensive policies to detect and prevent illicit activities."
+    },
+    {
+        "QuestionID": "Q2",
+        "RetrievedPassages": [
+            "Employees must complete mandatory cybersecurity training annually.",
+            "The company enforces strict data protection protocols to safeguard sensitive information."
+        ],
+        "Answer": "All employees are required to undergo annual cybersecurity training and follow stringent data protection protocols."
+    },
+    {
+        "QuestionID": "Q3",
+        "RetrievedPassages": [
+            "The environmental policy requires reducing carbon emissions by 20% over the next five years.",
+            "Organizations must adopt sustainable practices to minimize their environmental impact."
+        ],
+        "Answer": "Organizations must implement sustainable practices to achieve a 20% reduction in carbon emissions within five years."
+    },
+    {
+        "QuestionID": "Q4",
+        "RetrievedPassages": [
+            "Healthcare providers must ensure patient data privacy in accordance with HIPAA regulations.",
+            "All medical records should be securely stored and accessible only to authorized personnel."
+        ],
+        "Answer": "Healthcare providers must protect patient data privacy by securely storing medical records and restricting access to authorized individuals, in line with HIPAA."
+    },
+    {
+        "QuestionID": "Q5",
+        "RetrievedPassages": [
+            "Companies are obligated to provide equal employment opportunities to all candidates.",
+            "Discrimination based on race, gender, or age is strictly prohibited in the workplace."
+        ],
+        "Answer": "Companies must offer equal employment opportunities and prohibit discrimination based on race, gender, or age."
+    },
+    {
+        "QuestionID": "Q6",
+        "RetrievedPassages": [
+            "Financial disclosures must be filed quarterly to maintain transparency with stakeholders.",
+            "Accurate and timely reporting of financial data is essential for regulatory compliance."
+        ],
+        "Answer": "Organizations are required to file quarterly financial disclosures to ensure transparency and comply with regulatory standards."
+    },
+    {
+        "QuestionID": "Q7",
+        "RetrievedPassages": [
+            "Manufacturers must adhere to safety standards to prevent product-related injuries.",
+            "Regular inspections and quality control measures are necessary to maintain product integrity."
+        ],
+        "Answer": "Manufacturers must follow safety standards and conduct regular inspections to ensure product integrity and prevent injuries."
+    },
+    {
+        "QuestionID": "Q8",
+        "RetrievedPassages": [
+            "Data breach protocols must be established to respond effectively to security incidents.",
+            "Immediate action and reporting are required in the event of unauthorized data access."
+        ],
+        "Answer": "Organizations must have data breach protocols in place to swiftly respond and report unauthorized data access incidents."
+    },
+    {
+        "QuestionID": "Q9",
+        "RetrievedPassages": [
+            "Contractors must comply with the company's code of conduct during their engagement.",
+            "Any violations of ethical standards by contractors will result in termination of their contract."
+        ],
+        "Answer": "Contractors are required to follow the company's code of conduct, and any ethical violations will lead to contract termination."
+    },
+    {
+        "QuestionID": "Q10",
+        "RetrievedPassages": [
+            "The privacy policy outlines how user data is collected, used, and protected.",
+            "Users have the right to access and request deletion of their personal information."
+        ],
+        "Answer": "The privacy policy details the collection, usage, and protection of user data, granting users the right to access and request deletion of their personal information."
+    }
+]
