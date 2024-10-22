@@ -67,11 +67,30 @@ def calculate_scores_from_matrix(nli_matrix, score_type='entailment'):
         return 0.0
     return np.round(np.mean(np.max(nli_matrix, axis=0)), 5)
 
-def calculate_obligation_coverage_score(passages, answers):
-    obligation_sentences_source = [sent for passage in passages for sent in sent_tokenize(passage)]
-    obligation_sentences_answer = [sent for answer in answers for sent in sent_tokenize(answer)]
-    covered_count = 0
+def classify_obligations(sentences):
+    inputs = obligation_tokenizer(sentences, padding=True, truncation=True, return_tensors='pt').to(device)
+    with torch.no_grad():
+        logits = obligation_model(**inputs).logits
+    predictions = torch.argmax(logits, dim=1).cpu().numpy()
+    return predictions
 
+def calculate_obligation_coverage_score(passages, answers):
+    # Filter obligation sentences from passages
+    obligation_sentences_source = []
+    for passage in passages:
+        sentences = sent_tokenize(passage)
+        is_obligation = classify_obligations(sentences)
+        obligation_sentences_source.extend([sent for sent, label in zip(sentences, is_obligation) if label == 1])
+
+    # Filter obligation sentences from answers
+    obligation_sentences_answer = []
+    for answer in answers:
+        sentences = sent_tokenize(answer)
+        is_obligation = classify_obligations(sentences)
+        obligation_sentences_answer.extend([sent for sent, label in zip(sentences, is_obligation) if label == 1])
+
+    # Calculate coverage based on NLI entailment
+    covered_count = 0
     for obligation in obligation_sentences_source:
         for answer_sentence in obligation_sentences_answer:
             nli_result = coverage_nli_model(f"{answer_sentence} [SEP] {obligation}")
@@ -80,6 +99,7 @@ def calculate_obligation_coverage_score(passages, answers):
                 break
 
     return covered_count / len(obligation_sentences_source) if obligation_sentences_source else 0
+
 
 def calculate_final_composite_score(passages, answers):
     passage_sentences = [sent for passage in passages for sent in sent_tokenize(passage)]
